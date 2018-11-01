@@ -4,14 +4,12 @@
   "description": "",
   "main": "Wrapper.js",
   "scripts": {
-    "test": "mocha --timeout 100000 test.js"
+    "test": "mocha --timeout 10000 test.js"
   },
-  "author": "Hanmant SHinde",
+  "author": "Hanmant Shinde",
   "license": "ISC",
   "dependencies": {
     "chai": "^4.2.0",
     "kafka-node": "^3.0.1",
-    "mocha": "^5.2.0",
-    "npm": "file:../npm"
-  }
+    "mocha": "^5.2.0"  }
 }
