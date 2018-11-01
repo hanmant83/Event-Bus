@@ -11,7 +11,12 @@ Features:
 API:
 1)Import this package into your application and create its object with two parameters like hostName and GroupName.
  const wrapper=require('pegasuseventbus');
- const obj=new wrapper('127.0.0.1:2181','some_test_topic');
+ var config={
+  connectiobString:'127.0.0.1:2181',
+  groupName:'some_test_topic',
+  kafkaHost:'127.0.0.1:9092'
+}
+ const obj=new wrapper(config);
 
 2) Using above object we can send and receive messages from topics.
    send messages to topic:
@@ -29,7 +34,7 @@ API:
  First parameter of this function is topic name.
  4)Read messages using consumerGroup
      var topics = ['Test','DemoTest'];
-  obj.ConsumerGroup(topics,function(err,data){
+  obj.bulkReceive(topics,function(err,data){
      console.log(data.messages)
 })
 topics is a array of topics.
