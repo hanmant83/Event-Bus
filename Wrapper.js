@@ -1,16 +1,39 @@
 module.exports =class Message{
-    constructor(host,groupName) {
-        this.host = host;
-        this.groupName = groupName;
+    constructor(config) {
+        this.connectiobString = config.connectiobString;//Zookeeper connection string, default localhost:2181/
+        this.kafkaHost = config.kafkaHost;//A string of kafka broker/host combination delimited by comma
+        this.groupName = config.groupName;//consumer group id
       }
-   send(_data,callback){
-       var _config={host:this.host,groupName:this.groupName};
+      createTopic(topics,callback){ //This function create topic with given configurations.
+          var options={
+            kafkaHost:this.kafkaHost
+          }
+        var kafka = require('kafka-node'),
+         client = new kafka.KafkaClient(options);
+        client.createTopics(topics,function(err,res){
+            if(err){
+                var result={
+                    data:err,
+                    status:"Topic creation is in error state."
+                }
+                callback(result,null);
+            }else{
+                var result={
+                    data:res,
+                    status:"Topic created successfully."
+                }
+                callback(null,result);
+            }
+        })
+   }
+   send(_data,callback){ //This function save message to given topic.
+       var _config={host:this.connectiobString,groupName:this.groupName};
     Message.prototype.sendMessage(_config,_data,function(err,data){
        callback(err,data);
     })
   }
-   receive(_topicName,callback){
-    var _config={host:this.host,groupName:this.groupName}
+   receive(_topicName,callback){//This function read message from given topic
+    var _config={host:this.connectiobString,groupName:this.groupName}
     Message.prototype.getMessage(_config,_topicName,function(err,data){
         callback(err,data);
      })
@@ -27,7 +50,7 @@ module.exports =class Message{
           
     });
   }
-   ConsumerGroup(topics,callback){
+   bulkReceive(topics,callback){//This function reads message from multiple topics.
     const ConsumerGroup=require('./ConsumerGroup');
     ConsumerGroup.ReadConsumerGroup(this,topics,function(err,data){
        callback(err,data);
@@ -76,8 +99,10 @@ module.exports =class Message{
         { topic: _topicName, partition: _partition }
     ], function (err, data) {
         _offset=data[_topicName][_partition];
-       if(_offset==-1){
+       if(_offset==-1 || _offset==0){
             _offset=0;
+       }else{
+        _offset=_offset+1;
        }
        console.log(_offset)
     });
@@ -85,7 +110,7 @@ module.exports =class Message{
     var consumer = new Consumer(
         client,
         [
-            { topic: _topicName,offset:_offset+1,partition:_partition}
+            { topic: _topicName,offset:_offset,partition:_partition}
         ], 
         {
             autoCommit: false,
